@@ -16,17 +16,15 @@ if ($_SESSION['role'] != 'user') {
 
 $user = $_SESSION['user'];
 
-// Ambil data user
-$user_query = mysqli_query($conn, "SELECT * FROM users WHERE username='$user' AND role='user'");
-$user_data = mysqli_fetch_assoc($user_query);
+/* AMBIL PRODUK */
+/* FILTER KATEGORI */
+$kategori = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat']) : 'all';
 
-// Hitung statistik pengguna
-$total_orders = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM orders WHERE user_name='$user'"))['count'];
-$total_spent = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(total) as sum FROM orders WHERE user_name='$user'"))['sum'];
-$cart_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM cart WHERE user_name='$user'"))['count'];
-
-// Ambil order terbaru user
-$recent_orders = mysqli_query($conn, "SELECT * FROM orders WHERE user_name='$user' ORDER BY created_at DESC LIMIT 5");
+if($kategori == 'all'){
+    $produk = mysqli_query($conn, "SELECT * FROM products");
+} else {
+    $produk = mysqli_query($conn, "SELECT * FROM products WHERE category='$kategori'");
+}
 ?>
 
 <!DOCTYPE html>
@@ -376,40 +374,21 @@ $recent_orders = mysqli_query($conn, "SELECT * FROM orders WHERE user_name='$use
 </head>
 
 <body>
-    <div class="container">
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">🛒 ZMart</div>
-            <ul class="sidebar-menu">
-                <li><a href="dashboard_user.php" class="active">📊 Dashboard</a></li>
-                <li><a href="cart.php">🛒 Keranjang</a></li>
-                <li><a href="orders_user.php">📦 Pesanan Saya</a></li>
-                <li><a href="home.php">🏠 Belanja</a></li>
-                <li><a href="admin_chat.php">💬 Chat Admin</a></li>
-                <li><a href="#" onclick="openEditProfileModal()">👤 Edit Profil</a></li>
-                <li><a href="logout.php">🚪 Logout</a></li>
-            </ul>
-        </aside>
+<?php
+$cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
+    SELECT COALESCE(SUM(qty),0) as total 
+    FROM cart 
+    WHERE user_name='$user'
+"));
+?>
+<!-- HEADER -->
+<div class="header">
 
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <!-- HEADER -->
-            <div class="header">
-                <div>
-                    <h1>Dashboard Pengguna</h1>
-                    <p style="color: #666; margin-top: 5px;">Selamat datang, <?php echo $user_data['username']; ?>!</p>
-                </div>
-                <div class="user-info">
-                    <span><?php echo date('d M Y'); ?></span>
-                    <div class="user-avatar">
-                        <?php if (isset($user_data['foto_profil']) && $user_data['foto_profil']): ?>
-                            <img src="uploads/<?php echo $user_data['foto_profil']; ?>" alt="Profil">
-                        <?php else: ?>
-                            <?php echo strtoupper(substr($user_data['username'], 0, 1)); ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
+    <div class="logo">ZMart</div>
+
+    <div class="search">
+        <input type="text" id="search" placeholder="Cari produk...">
+    </div>
 
             <!-- STATS CARDS -->
             <div class="stats-grid">
@@ -472,30 +451,42 @@ $recent_orders = mysqli_query($conn, "SELECT * FROM orders WHERE user_name='$use
                 <?php endif; ?>
             </div>
 
-            <!-- PROFILE INFO -->
-            <div class="content-section">
-                <h2 class="section-title">Informasi Profil</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                        <p><strong>Username:</strong> <?php echo $user_data['username']; ?></p>
-                        <p><strong>Email:</strong> <?php echo isset($user_data['email']) ? $user_data['email'] : '-'; ?></p>
-                        <p><strong>No. Telepon:</strong> <?php echo isset($user_data['no_hp']) ? $user_data['no_hp'] : '-'; ?></p>
-                        <p><strong>Alamat:</strong> <?php echo isset($user_data['alamat']) ? $user_data['alamat'] : '-'; ?></p>
-                    </div>
-                    <div style="text-align: center;">
-                        <div class="profile-avatar" style="width: 100%; height: 200px;">
-                            <?php if (isset($user_data['foto_profil']) && $user_data['foto_profil']): ?>
-                                <img src="uploads/<?php echo $user_data['foto_profil']; ?>" alt="Profil">
-                            <?php else: ?>
-                                <div style="font-size: 80px; color: #0071ce;"><?php echo strtoupper(substr($user_data['username'], 0, 1)); ?></div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-primary" onclick="openEditProfileModal()">Edit Profil</button>
-                </div>
-            </div>
+<!-- BANNER -->
+<div class="banner">
+    <div>
+        🔥 Promo Hari Ini
+        <br><small>Diskon sampai 50%</small>
+    </div>
+    <div>🏷️ SALE</div>
+</div>
+
+<!-- PRODUK -->
+<div class="container">
+
+<?php while($p = mysqli_fetch_assoc($produk)) { ?>
+
+<div class="card product">
+
+    <img src="uploads/<?= $p['image'] ?>">
+
+    <div class="body">
+
+        <a href="detail_produk.php?id=<?= $p['id'] ?>" class="title">
+            <?= htmlspecialchars($p['name']) ?>
+        </a>
+
+        <div class="price">
+            Rp <?= number_format($p['price']) ?>
+        </div>
+
+        <div class="btn-group">
+            <a class="buy" href="buy_now.php?id=<?= $p['id'] ?>">
+                Beli
+            </a>
+
+            <a class="cart-btn" href="add_cart.php?id=<?= $p['id'] ?>">
+                +
+            </a>
         </div>
     </div>
 

@@ -1,7 +1,6 @@
 <?php
-$conn = mysqli_connect("localhost","root","","zmart");
+$conn = mysqli_connect("localhost", "root", "", "zmart.id");
 
-if(!$conn){
+if (!$conn) {
   die("Koneksi gagal: " . mysqli_connect_error());
 }
-?>

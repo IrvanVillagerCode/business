@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛒 ZMart - Panduan Lengkap</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0071ce 0%, #00a8e8 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0071ce 0%, #00539b 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #0071ce;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #ffc220;
+        }
+        
+        .subsection {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #0071ce;
+            border-radius: 4px;
+        }
+        
+        .subsection h3 {
+            color: #0071ce;
+            margin-bottom: 10px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #0071ce;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 15px 0;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #0071ce;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #00539b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,113,206,0.3);
+        }
+        
+        .btn-secondary {
+            background: #ffc220;
+            color: #0071ce;
+        }
+        
+        .btn-secondary:hover {
+            background: #ffb81c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,194,32,0.3);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        table th {
+            background: #0071ce;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background: #0071ce;
+            color: white;
+            border-color: #0071ce;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc220;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .footer {
+            background: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            color: #666;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            color: #0071ce;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .section-title {
+                font-size: 1.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 ZMart E-Commerce Platform</h1>
+            <p>Panduan Lengkap Fitur Baru & Cara Penggunaan</p>
+        </div>
+        
+        <div class="content">
+            <!-- QUICK START -->
+            <div class="section">
+                <h2 class="section-title">🚀 Quick Start (3 Langkah)</h2>
+                
+                <div class="subsection">
+                    <h3>Langkah 1: Setup Database</h3>
+                    <p>Jalankan script untuk menambah kolom profil ke database users:</p>
+                    <div class="btn-group">
+                        <a href="setup_profile.php" class="btn btn-primary">▶ Setup Database Sekarang</a>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Langkah 2: Verifikasi Sistem</h3>
+                    <p>Periksa apakah semua komponen sudah terinstall dengan benar:</p>
+                    <div class="btn-group">
+                        <a href="setup_test.php" class="btn btn-primary">✓ Test Sistem</a>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Langkah 3: Login & Explore</h3>
+                    <p>Login dengan akun test dan jelajahi semua fitur baru:</p>
+                    <div class="btn-group">
+                        <a href="login.php" class="btn btn-primary">🔐 Login</a>
+                        <a href="home.php" class="btn btn-secondary">🏠 Ke Home Page</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FITUR UTAMA -->
+            <div class="section">
+                <h2 class="section-title">✨ Fitur Utama yang Ditambahkan</h2>
+                
+                <div class="grid">
+                    <div class="card">
+                        <h3>📱 Home Page Dinamis</h3>
+                        <p>Halaman beranda dengan desain modern terinspirasi dari Walmart.com</p>
+                        <ul class="feature-list">
+                            <li>Produk dinamis dari database</li>
+                            <li>Filter kategori real-time</li>
+                            <li>Search produk dengan JavaScript</li>
+                            <li>Responsive design</li>
+                        </ul>
+                        <div class="btn-group">
+                            <a href="home.php" class="btn btn-primary">Lihat Home</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📊 Dashboard Admin</h3>
+                        <p>Dashboard admin dengan statistik dan manajemen</p>
+                        <ul class="feature-list">
+                            <li>Statistik real-time</li>
+                            <li>Tabel pesanan terbaru</li>
+                            <li>Edit profil admin</li>
+                            <li>Upload foto profil</li>
+                        </ul>
+                        <div class="btn-group">
+                            <a href="dashboard_admin.php" class="btn btn-primary">Lihat Dashboard</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>👤 Dashboard User</h3>
+                        <p>Dashboard pengguna dengan riwayat pesanan</p>
+                        <ul class="feature-list">
+                            <li>Statistik pengguna</li>
+                            <li>Riwayat pesanan</li>
+                            <li>Edit profil user</li>
+                            <li>Upload foto profil</li>
+                        </ul>
+                        <div class="btn-group">
+                            <a href="dashboard_user.php" class="btn btn-primary">Lihat Dashboard</a>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📸 Upload Foto Profil</h3>
+                        <p>Fitur edit profil lengkap dengan upload foto</p>
+                        <ul class="feature-list">
+                            <li>Preview foto real-time</li>
+                            <li>Update email & telepon</li>
+                            <li>Update alamat lengkap</li>
+                            <li>Ubah password</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- LOGIN CREDENTIALS -->
+            <div class="section">
+                <h2 class="section-title">🔐 Akun Test</h2>
+                
+                <div class="tab-container">
+                    <div class="tab active" onclick="showTab(this, 'admin')">Admin</div>
+                    <div class="tab" onclick="showTab(this, 'user')">User</div>
+                </div>
+                
+                <div id="admin" class="tab-content active">
+                    <h3>👨‍💼 Akun Admin</h3>
+                    <div class="code-block">Username: admin
+Password: 12345</div>
+                    <p><strong>Akses ke:</strong> Dashboard Admin dengan statistik penuh, edit profil admin, manajemen pesanan</p>
+                    <div class="btn-group">
+                        <a href="login.php" class="btn btn-primary">Login sebagai Admin</a>
+                    </div>
+                </div>
+                
+                <div id="user" class="tab-content">
+                    <h3>👥 Akun User</h3>
+                    <div class="code-block">Username: user1
+Password: 12345</div>
+                    <p><strong>Akses ke:</strong> Dashboard User dengan riwayat pesanan, statistik pengeluaran, edit profil</p>
+                    <div class="btn-group">
+                        <a href="login.php" class="btn btn-primary">Login sebagai User</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FITUR DETAIL -->
+            <div class="section">
+                <h2 class="section-title">🎯 Penjelasan Fitur Detail</h2>
+                
+                <div class="subsection">
+                    <h3>1. Home Page (home.php)</h3>
+                    <p>Halaman public yang bisa diakses oleh semua orang tanpa login.</p>
+                    <h4>Fitur:</h4>
+                    <ul class="feature-list">
+                        <li>Header dengan logo, search bar, dan navigasi</li>
+                        <li>Navbar untuk filter kategori produk</li>
+                        <li>Banner promosi dengan gradient</li>
+                        <li>Grid produk dinamis 4 kolom (responsive)</li>
+                        <li>Search realtime dengan JavaScript</li>
+                        <li>Tambah keranjang (perlu login)</li>
+                        <li>Footer informatif</li>
+                    </ul>
+                    <p><strong>Desain:</strong> Terinspirasi dari Walmart.com dengan warna biru #0071ce dan gold #ffc220</p>
+                </div>
+                
+                <div class="subsection">
+                    <h3>2. Dashboard Admin (dashboard_admin.php)</h3>
+                    <p>Dashboard khusus untuk admin dengan statistik dan manajemen lengkap.</p>
+                    <h4>Fitur:</h4>
+                    <ul class="feature-list">
+                        <li>Sidebar navigasi tetap dengan menu lengkap</li>
+                        <li>Header dengan tanggal dan avatar user</li>
+                        <li>Stats cards: Total Pesanan, Pengguna, Produk, Revenue</li>
+                        <li>Tabel pesanan terbaru dengan status badge</li>
+                        <li>Modal edit profil dengan upload foto</li>
+                        <li>All-in-one sidebar navigation</li>
+                    </ul>
+                    <p><strong>Akses menu:</strong> Dashboard, Tambah Produk, Pesanan, Chat, Edit Profil, Logout</p>
+                </div>
+                
+                <div class="subsection">
+                    <h3>3. Dashboard User (dashboard_user.php)</h3>
+                    <p>Dashboard personal untuk pengguna reguler dengan riwayat pesanan.</p>
+                    <h4>Fitur:</h4>
+                    <ul class="feature-list">
+                        <li>Sidebar navigasi untuk user</li>
+                        <li>Stats: Total Pesanan, Pengeluaran, Keranjang</li>
+                        <li>Tabel pesanan personal</li>
+                        <li>Section informasi profil dengan avatar</li>
+                        <li>Modal edit profil dengan upload foto</li>
+                        <li>Link quick access ke berbagai halaman</li>
+                    </ul>
+                    <p><strong>Akses menu:</strong> Dashboard, Keranjang, Pesanan, Belanja, Chat, Edit Profil, Logout</p>
+                </div>
+                
+                <div class="subsection">
+                    <h3>4. Edit Profil & Upload Foto (update_profile.php)</h3>
+                    <p>API endpoint untuk menangani update profil dan upload foto profil.</p>
+                    <h4>Field yang bisa diupdate:</h4>
+                    <ul class="feature-list">
+                        <li>Email (varchar 100)</li>
+                        <li>Nomor Telepon (varchar 15)</li>
+                        <li>Alamat (text)</li>
+                        <li>Password (optional)</li>
+                        <li>Foto Profil (jpg, png, gif, jpeg)</li>
+                    </ul>
+                    <p><strong>Fitur:</strong> Real-time photo preview, validasi file, response JSON</p>
+                </div>
+            </div>
+            
+            <!-- DATABASE -->
+            <div class="section">
+                <h2 class="section-title">🗄️ Perubahan Database</h2>
+                
+                <div class="success">
+                    <strong>✅ Kolom baru ditambahkan ke tabel users:</strong>
+                </div>
+                
+                <div class="table-responsive">
+                    <table>
+                        <tr>
+                            <th>Kolom</th>
+                            <th>Tipe</th>
+                            <th>Keterangan</th>
+                        </tr>
+                        <tr>
+                            <td>email</td>
+                            <td>VARCHAR(100)</td>
+                            <td>Email address pengguna</td>
+                        </tr>
+                        <tr>
+                            <td>no_hp</td>
+                            <td>VARCHAR(15)</td>
+                            <td>Nomor telepon pengguna</td>
+                        </tr>
+                        <tr>
+                            <td>alamat</td>
+                            <td>TEXT</td>
+                            <td>Alamat lengkap pengguna</td>
+                        </tr>
+                        <tr>
+                            <td>foto_profil</td>
+                            <td>VARCHAR(255)</td>
+                            <td>Nama file foto profil</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="warning">
+                    <strong>⚠️ Setup Database:</strong> Jalankan <a href="setup_profile.php">setup_profile.php</a> untuk menambahkan kolom-kolom ini
+                </div>
+            </div>
+            
+            <!-- NAVIGATION FLOW -->
+            <div class="section">
+                <h2 class="section-title">🔗 Alur Navigasi</h2>
+                
+                <div class="subsection">
+                    <h3>User Belum Login</h3>
+                    <div class="code-block">
+index.php → home.php
+├── Search produk
+├── Filter kategori
+├── Lihat detail produk
+└── Login link → login.php
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Admin Sudah Login</h3>
+                    <div class="code-block">
+index.php → dashboard_admin.php
+├── View statistics
+├── Manage orders
+├── Add products
+├── View/Edit products
+├── Chat
+├── Edit Profile (modal)
+│   ├── Upload photo
+│   ├── Update email/phone/address
+│   └── Change password
+└── Logout
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <h3>User Sudah Login</h3>
+                    <div class="code-block">
+index.php → dashboard_user.php
+├── View statistics
+├── View orders
+├── Go to home (shopping)
+├── View cart
+├── Chat admin
+├── Edit Profile (modal)
+│   ├── Upload photo
+│   ├── Update email/phone/address
+│   └── Change password
+└── Logout
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FILE STRUCTURE -->
+            <div class="section">
+                <h2 class="section-title">📁 Struktur File</h2>
+                
+                <div class="subsection">
+                    <h3>File Baru Ditambahkan</h3>
+                    <ul class="feature-list">
+                        <li><strong>home.php</strong> - Halaman home page</li>
+                        <li><strong>dashboard_admin.php</strong> - Dashboard admin baru</li>
+                        <li><strong>dashboard_user.php</strong> - Dashboard user baru</li>
+                        <li><strong>update_profile.php</strong> - API update profil</li>
+                        <li><strong>get_cart_count.php</strong> - API hitung keranjang</li>
+                        <li><strong>setup_profile.php</strong> - Script setup database</li>
+                        <li><strong>setup_test.php</strong> - Page testing system</li>
+                        <li><strong>README_FEATURES.md</strong> - Dokumentasi lengkap</li>
+                        <li><strong>IMPLEMENTASI_SUMMARY.txt</strong> - Ringkasan implementasi</li>
+                        <li><strong>QUICK_START.sh</strong> - Quick start guide</li>
+                    </ul>
+                </div>
+                
+                <div class="subsection">
+                    <h3>File yang Dimodifikasi</h3>
+                    <ul class="feature-list">
+                        <li><strong>index.php</strong> - Update redirect logic sesuai role</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- TROUBLESHOOTING -->
+            <div class="section">
+                <h2 class="section-title">🔧 Troubleshooting</h2>
+                
+                <div class="subsection">
+                    <h3>Database Error saat Setup</h3>
+                    <p><strong>Solusi:</strong> Jalankan ulang <a href="setup_profile.php">setup_profile.php</a> atau periksa koneksi di config.php</p>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Upload Foto Tidak Berfungsi</h3>
+                    <p><strong>Solusi:</strong> Pastikan folder 'uploads' writable (chmod 755)</p>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Modal Tidak Muncul</h3>
+                    <p><strong>Solusi:</strong> Buka browser console (F12) untuk melihat error JavaScript</p>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Produk Tidak Muncul di Home Page</h3>
+                    <p><strong>Solusi:</strong> Pastikan data produk ada di database products table</p>
+                </div>
+                
+                <div class="subsection">
+                    <h3>Dashboard Tidak Bisa Diakses</h3>
+                    <p><strong>Solusi:</strong> Login ulang atau clear session browser</p>
+                </div>
+            </div>
+            
+            <!-- NEXT STEPS -->
+            <div class="section">
+                <h2 class="section-title">📈 Next Steps / Improvements</h2>
+                
+                <ul class="feature-list">
+                    <li>Add pagination untuk tabel pesanan</li>
+                    <li>Add image optimization & compression</li>
+                    <li>Add advanced search dengan AJAX</li>
+                    <li>Add notification system</li>
+                    <li>Add review & rating produk</li>
+                    <li>Add wishlist feature</li>
+                    <li>Add order tracking real-time</li>
+                    <li>Add email notifications</li>
+                    <li>Implement payment gateway</li>
+                    <li>Add analytics dashboard</li>
+                </ul>
+            </div>
+            
+            <!-- CTA BUTTONS -->
+            <div class="section">
+                <h2 class="section-title">🎯 Mulai Sekarang</h2>
+                
+                <div class="btn-group" style="justify-content: center; gap: 20px;">
+                    <a href="setup_profile.php" class="btn btn-primary">
+                        ⚙️ Setup Database
+                    </a>
+                    <a href="setup_test.php" class="btn btn-secondary">
+                        ✓ Test Sistem
+                    </a>
+                    <a href="home.php" class="btn btn-primary">
+                        🏠 Home Page
+                    </a>
+                    <a href="login.php" class="btn btn-secondary">
+                        🔐 Login
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>✅ ZMart E-Commerce Platform v1.0 - Complete & Ready to Use</p>
+            <p>Created: May 3, 2026 | By: AI Assistant</p>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(element, tabName) {
+            // Hide all tabs
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(c => c.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            element.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -2,669 +2,610 @@
 session_start();
 include "config.php";
 
-/* CEK LOGIN */
-if(!isset($_SESSION['user'])){
+// CEK LOGIN
+if (!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit;
 }
 
-/* CEK ROLE */
-if($_SESSION['role'] != 'user'){
+// CEK ROLE
+if ($_SESSION['role'] != 'user') {
     header("Location: dashboard_admin.php");
     exit;
 }
 
 $user = $_SESSION['user'];
 
-/* AMBIL PRODUK */
-/* FILTER KATEGORI */
-$kategori = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat']) : 'all';
+// Ambil data user
+$user_query = mysqli_query($conn, "SELECT * FROM users WHERE username='$user' AND role='user'");
+$user_data = mysqli_fetch_assoc($user_query);
 
-if($kategori == 'all'){
-    $produk = mysqli_query($conn, "SELECT * FROM products");
-} else {
-    $produk = mysqli_query($conn, "SELECT * FROM products WHERE category='$kategori'");
-}
+// Hitung statistik pengguna
+$total_orders = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM orders WHERE user_name='$user'"))['count'];
+$total_spent = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(total) as sum FROM orders WHERE user_name='$user'"))['sum'];
+$cart_count = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as count FROM cart WHERE user_name='$user'"))['count'];
+
+// Ambil order terbaru user
+$recent_orders = mysqli_query($conn, "SELECT * FROM orders WHERE user_name='$user' ORDER BY created_at DESC LIMIT 5");
 ?>
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>ZMart Pro</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - ZMart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
 
-/* ===== GLOBAL ===== */
-body{
-    margin:0;
-    font-family:'Segoe UI', Arial, sans-serif;
-    background:#f1f5f9;
-    color:#1f2937;
-}
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
 
-/* ===== HEADER ===== */
-.header{
-    background:white;
-    padding:12px 20px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    position:sticky;
-    top:0;
-    z-index:1000;
-    border-bottom:1px solid #e5e7eb;
-}
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background-color: #0071ce;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
 
-.logo{
-    font-size:20px;
-    font-weight:bold;
-    color:#2563eb;
-}
+        .sidebar-brand {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            color: #ffc220;
+        }
 
-.menu{
-    display:flex;
-    align-items:center;
-    gap:10px;
-}
+        .sidebar-menu {
+            list-style: none;
+        }
 
-/* SEARCH */
-.search input{
-    width:100%;
-    max-width:400px;
-    padding:10px 15px;
-    border-radius:30px;
-    border:1px solid #e5e7eb;
-    outline:none;
-    background:#f9fafb;
-}
+        .sidebar-menu li {
+            margin-bottom: 15px;
+        }
 
-/* CART */
-.cart-icon{
-    position:relative;
-    width:40px;
-    height:40px;
-    border-radius:50%;
-    background:#111;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-decoration:none;
-}
+        .sidebar-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            display: block;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
 
-.cart-badge{
-    position:absolute;
-    top:-5px;
-    right:-5px;
-    background:red;
-    color:white;
-    font-size:10px;
-    width:18px;
-    height:18px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: #ffc220;
+            color: #0071ce;
+        }
 
-/* BUTTON */
-.btn{
-    padding:8px 12px;
-    border-radius:8px;
-    text-decoration:none;
-    font-size:13px;
-    font-weight:600;
-}
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 20px;
+        }
 
-.history-btn{
-    background:#2563eb;
-    color:white;
-}
+        .header {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-.logout-btn{
-    background:#ef4444;
-    color:white;
-}
+        .header h1 {
+            color: #0071ce;
+        }
 
-/* CATEGORY */
-.category{
-    display:flex;
-    gap:10px;
-    padding:10px 20px;
-    overflow-x:auto;
-}
-.category-wrapper{
-    position:relative;
-    padding:10px 20px;
-}
-.category-btn{
-    background:white;
-    border:1px solid #e5e7eb;
-    padding:10px 14px;
-    border-radius:10px;
-    width:160px;
-    cursor:pointer;
-    font-weight:600;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    transition:.2s;
-}
-.category-btn:hover{
-    background:#f9fafb;
-}
-/* DROPDOWN MODERN */
-.category-dropdown{
-    position:absolute;
-    top:55px;
-    left:20px;
-    width:180px;
-    background:white;
-    border:1px solid #e5e7eb;
-    border-radius:12px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.1);
-    display:none;
-    flex-direction:column;
-    overflow:hidden;
-    z-index:1000;
-    animation:fade .2s ease;
-}
-.category-dropdown a{
-    padding:10px 12px;
-    text-decoration:none;
-    color:#111;
-    font-size:14px;
-    transition:.2s;
-}
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-.category-dropdown a:hover{
-    background:#f1f5f9;
-}
-.category-dropdown a.active{
-    background:#2563eb;
-    color:white;
-}
-@keyframes fade{
-    from{opacity:0; transform:translateY(-5px);}
-    to{opacity:1; transform:translateY(0);}
-}
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #0071ce;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            overflow: hidden;
+        }
 
-.category div{
-    padding:6px 12px;
-    background:white;
-    border-radius:20px;
-    font-size:13px;
-    border:1px solid #e5e7eb;
-    cursor:pointer;
-}
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-/* BANNER */
-.banner{
-    margin:15px 20px;
-    padding:15px;
-    border-radius:12px;
-    background:linear-gradient(135deg,#3b82f6,#60a5fa);
-    color:white;
-    display:flex;
-    justify-content:space-between;
-}
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
 
-/* GRID */
-.container{
-    padding:20px;
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-    gap:20px;
-}
+        .stat-card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #0071ce;
+        }
 
-/* CARD */
-.card{
-    background:white;
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 4px 12px rgba(0,0,0,0.05);
-    transition:.3s;
-}
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
 
-.card:hover{
-    transform:translateY(-6px);
-}
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0071ce;
+        }
 
-.card img{
-    width:100%;
-    height:150px;
-    object-fit:contain;
-    background:#f9fafb;
-}
+        .content-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
 
-.body{
-    padding:12px;
-}
+        .section-title {
+            font-size: 20px;
+            color: #0071ce;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
 
-.title{
-    font-size:14px;
-    font-weight:600;
-    color:#111;
-    text-decoration:none;
-    display:block;
-    height:36px;
-    overflow:hidden;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-.price{
-    color:#2563eb;
-    font-weight:bold;
-    margin:5px 0;
-}
+        table th {
+            background-color: #f0f0f0;
+            padding: 12px;
+            text-align: left;
+            color: #333;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
 
-/* BUTTON GROUP */
-.btn-group{
-    display:flex;
-    gap:5px;
-}
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
 
-.buy{
-    flex:1;
-    background:#2563eb;
-    color:white;
-    text-align:center;
-    padding:8px;
-    border-radius:8px;
-    font-size:12px;
-}
+        table tr:hover {
+            background-color: #f9f9f9;
+        }
 
-.cart-btn{
-    width:40px;
-    background:#e5e7eb;
-    text-align:center;
-    border-radius:8px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-.shopee-chat{
-    position:fixed;
-    bottom:20px;
-    right:20px;
-    width:55px;
-    height:55px;
-    background:#ee4d2d;
-    color:white;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:20px;
-    text-decoration:none;
-    box-shadow:0 8px 20px rgba(0,0,0,0.2);
-    z-index:9999;
-    transition:.2s;
-}
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
 
-.shopee-chat:hover{
-    transform:scale(1.1);
-}
-.chat-label{
-    position:absolute;
-    right:70px;
-    background:#111;
-    color:white;
-    padding:5px 8px;
-    border-radius:6px;
-    font-size:12px;
-    opacity:0;
-    transition:.2s;
-    white-space:nowrap;
-}
+        .btn-primary {
+            background-color: #0071ce;
+            color: white;
+        }
 
-.shopee-chat:hover .chat-label{
-    opacity:1;
-}
-/* FLOAT BUTTON */
-.chat-float{
-    position:fixed;
-    bottom:20px;
-    right:20px;
-    width:55px;
-    height:55px;
-    background:#2563eb;
-    color:white;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:22px;
-    cursor:pointer;
-    box-shadow:0 8px 20px rgba(0,0,0,0.2);
-    z-index:9999;
-}
+        .btn-primary:hover {
+            background-color: #00539b;
+        }
 
-/* CHAT BOX */
-.chat-box{
-    position:fixed;
-    bottom:90px;
-    right:20px;
-    width:320px;
-    height:420px;
-    background:white;
-    border-radius:14px;
-    box-shadow:0 12px 35px rgba(0,0,0,0.25);
-    display:none;
-    flex-direction:column;
-    overflow:hidden;
-    z-index:10000;
-    animation:pop .2s ease;
-}
-@keyframes pop{
-    from{transform:scale(.9); opacity:0;}
-    to{transform:scale(1); opacity:1;}
-}
+        .btn-warning {
+            background-color: #ffc220;
+            color: #0071ce;
+        }
 
-/* HEADER */
-.chat-header{
-    background:#2563eb;
-    color:white;
-    padding:10px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-weight:bold;
-}
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
 
-.chat-header button{
-    background:none;
-    border:none;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-}
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
 
-/* BODY */
-.chat-body{
-    flex:1;
-    padding:10px;
-    overflow-y:auto;
-    background:#f9fafb;
-}
+        .status-dibatalkan {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
 
-/* message style fix */
-.msg{
-    max-width:80%;
-    padding:8px 10px;
-    margin:6px 0;
-    border-radius:10px;
-    font-size:13px;
-    word-wrap:break-word;
-}
+        /* MODAL */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
 
-.user{
-    background:#dcfce7;
-    margin-left:auto;
-    text-align:right;
-}
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
 
-.admin{
-    background:#e5e7eb;
-    margin-right:auto;
-}
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
 
-/* FOOTER */
-.chat-footer{
-    display:flex;
-    border-top:1px solid #e5e7eb;
-}
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+        }
 
-.chat-footer input{
-    flex:1;
-    padding:10px;
-    border:none;
-    outline:none;
-    border-top-left-radius:12px;
-}
+        .close:hover {
+            color: #000;
+        }
 
-.chat-footer button{
-    background:#2563eb;
-    color:white;
-    border:none;
-    padding:0 15px;
-    cursor:pointer;
-    border-top-right-radius:12px;
-}
-.chat-footer button:hover{
-    background:#1d4ed8;
-}
-@media (max-width: 600px){
-    .chat-box{
-        width: 90%;
-        right: 5%;
-        bottom: 80px;
-    }
-    .chat-float{
-        width:50px;
-        height:50px;
-        font-size:20px;
-    }
-}
-</style>
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0071ce;
+            box-shadow: 0 0 5px rgba(0, 113, 206, 0.3);
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+
+            .main-content {
+                margin-left: 200px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
-<?php
-$cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
-    SELECT COALESCE(SUM(qty),0) as total 
-    FROM cart 
-    WHERE user_name='$user'
-"));
-?>
-<!-- HEADER -->
-<div class="header">
+    <div class="container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">🛒 ZMart</div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard_user.php" class="active">📊 Dashboard</a></li>
+                <li><a href="cart.php">🛒 Keranjang</a></li>
+                <li><a href="orders_user.php">📦 Pesanan Saya</a></li>
+                <li><a href="home.php">🏠 Belanja</a></li>
+                <li><a href="admin_chat.php">💬 Chat Admin</a></li>
+                <li><a href="#" onclick="openEditProfileModal()">👤 Edit Profil</a></li>
+                <li><a href="logout.php">🚪 Logout</a></li>
+            </ul>
+        </aside>
 
-    <div class="logo">ZMart</div>
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <div>
+                    <h1>Dashboard Pengguna</h1>
+                    <p style="color: #666; margin-top: 5px;">Selamat datang, <?php echo $user_data['username']; ?>!</p>
+                </div>
+                <div class="user-info">
+                    <span><?php echo date('d M Y'); ?></span>
+                    <div class="user-avatar">
+                        <?php if (isset($user_data['foto_profil']) && $user_data['foto_profil']): ?>
+                            <img src="uploads/<?php echo $user_data['foto_profil']; ?>" alt="Profil">
+                        <?php else: ?>
+                            <?php echo strtoupper(substr($user_data['username'], 0, 1)); ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
 
-    <div class="search">
-        <input type="text" id="search" placeholder="Cari produk...">
-    </div>
+            <!-- STATS CARDS -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Pesanan</h3>
+                    <div class="stat-value"><?php echo $total_orders; ?></div>
+                </div>
 
-    <div class="menu">
-        <a href="cart.php" class="cart-icon">
-        🛒
-        <span class="cart-badge">
-            <?= $cartCount['total'] ?? 0 ?>
-        </span>
-        </a>
+                <div class="stat-card">
+                    <h3>Total Pengeluaran</h3>
+                    <div class="stat-value">Rp <?php echo number_format($total_spent ?? 0, 0, ',', '.'); ?></div>
+                </div>
 
-        <a href="orders_user.php" class="btn history-btn">Riwayat</a>
-        <a href="logout.php" class="btn logout-btn">Logout</a>
-    </div>
+                <div class="stat-card">
+                    <h3>Keranjang</h3>
+                    <div class="stat-value"><?php echo $cart_count; ?></div>
+                </div>
+            </div>
 
-</div>
+            <!-- RECENT ORDERS -->
+            <div class="content-section">
+                <h2 class="section-title">Pesanan Terbaru Anda</h2>
+                <?php
+                $count = mysqli_num_rows($recent_orders);
+                if ($count > 0):
+                ?>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($order = mysqli_fetch_assoc($recent_orders)): ?>
+                                <tr>
+                                    <td>#<?php echo $order['id']; ?></td>
+                                    <td>Rp <?php echo number_format($order['total'], 0, ',', '.'); ?></td>
+                                    <td>
+                                        <span class="status-badge status-<?php echo str_replace(' ', '-', strtolower($order['status'])); ?>">
+                                            <?php echo ucfirst($order['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo date('d M Y', strtotime($order['created_at'])); ?></td>
+                                    <td>
+                                        <a href="order_detail.php?id=<?php echo $order['id']; ?>" class="btn btn-primary">Lihat</a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p style="color: #666; text-align: center; padding: 20px;">Anda belum memiliki pesanan</p>
+                    <div style="text-align: center;">
+                        <a href="home.php" class="btn btn-primary">Mulai Berbelanja</a>
+                    </div>
+                <?php endif; ?>
+            </div>
 
-<!-- CATEGORY -->
-<div class="category-wrapper">
-
-    <div class="category-btn" onclick="toggleCategory()">
-        ☰ Kategori
-    </div>
-
-    <div class="category-dropdown" id="categoryDropdown">
-
-        <a href="dashboard_user.php?cat=all"
-            class="<?= ($kategori=='all') ? 'active' : '' ?>">
-            Semua
-        </a>
-        <a href="dashboard_user.php?cat=makanan"
-            class="<?= ($kategori=='makanan') ? 'active' : '' ?>">
-            Makanan
-        </a>
-        <a href="dashboard_user.php?cat=minuman"
-            class="<?= ($kategori=='minuman') ? 'active' : '' ?>">
-            Minuman
-        </a>
-        <a href="dashboard_user.php?cat=atk"
-            class="<?= ($kategori=='atk') ? 'active' : '' ?>">
-            ATK
-        </a>
-
-    </div>
-
-</div>
-
-<!-- BANNER -->
-<div class="banner">
-    <div>
-        🔥 Promo Hari Ini
-        <br><small>Diskon sampai 50%</small>
-    </div>
-    <div>🏷️ SALE</div>
-</div>
-
-<!-- PRODUK -->
-<div class="container">
-
-<?php while($p = mysqli_fetch_assoc($produk)) { ?>
-
-<div class="card product">
-
-    <img src="uploads/<?= $p['image'] ?>">
-
-    <div class="body">
-
-        <a href="detail_produk.php?id=<?= $p['id'] ?>" class="title">
-            <?= htmlspecialchars($p['name']) ?>
-        </a>
-
-        <div class="price">
-            Rp <?= number_format($p['price']) ?>
+            <!-- PROFILE INFO -->
+            <div class="content-section">
+                <h2 class="section-title">Informasi Profil</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <p><strong>Username:</strong> <?php echo $user_data['username']; ?></p>
+                        <p><strong>Email:</strong> <?php echo isset($user_data['email']) ? $user_data['email'] : '-'; ?></p>
+                        <p><strong>No. Telepon:</strong> <?php echo isset($user_data['no_hp']) ? $user_data['no_hp'] : '-'; ?></p>
+                        <p><strong>Alamat:</strong> <?php echo isset($user_data['alamat']) ? $user_data['alamat'] : '-'; ?></p>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="profile-avatar" style="width: 100%; height: 200px;">
+                            <?php if (isset($user_data['foto_profil']) && $user_data['foto_profil']): ?>
+                                <img src="uploads/<?php echo $user_data['foto_profil']; ?>" alt="Profil">
+                            <?php else: ?>
+                                <div style="font-size: 80px; color: #0071ce;"><?php echo strtoupper(substr($user_data['username'], 0, 1)); ?></div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="openEditProfileModal()">Edit Profil</button>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="btn-group">
-            <a class="buy" href="buy_now.php?id=<?= $p['id'] ?>">
-                Beli
-            </a>
+    <!-- MODAL EDIT PROFIL -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Profil</h2>
+                <span class="close" onclick="closeEditProfileModal()">&times;</span>
+            </div>
 
-            <a class="cart-btn" href="add_cart.php?id=<?= $p['id'] ?>">
-                +
-            </a>
+            <div class="profile-section">
+                <div class="profile-avatar">
+                    <img id="previewAvatar" src="<?php echo (isset($user_data['foto_profil']) && $user_data['foto_profil']) ? 'uploads/' . $user_data['foto_profil'] : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2240%22%3E' . strtoupper(substr($user_data['username'], 0, 1)) . '%3C/text%3E%3C/svg%3E'; ?>" alt="Profil">
+                </div>
+                <div>
+                    <h3>Upload Foto Profil</h3>
+                    <input type="file" id="fotoInput" accept="image/*" onchange="previewImage(this)">
+                </div>
+            </div>
+
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" value="<?php echo $user_data['username']; ?>" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" value="<?php echo isset($user_data['email']) ? $user_data['email'] : ''; ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">No. Telepon</label>
+                    <input type="tel" id="phone" value="<?php echo isset($user_data['no_hp']) ? $user_data['no_hp'] : ''; ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Alamat</label>
+                    <textarea id="address"><?php echo isset($user_data['alamat']) ? $user_data['alamat'] : ''; ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password Baru (kosongkan jika tidak ingin mengubah)</label>
+                    <input type="password" id="password">
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="updateProfile()">Simpan Perubahan</button>
+            </form>
         </div>
-
     </div>
 
-</div>
-
-<?php } ?>
-
-</div>
-<!-- FLOATING CHAT BUTTON -->
-<div class="chat-float" onclick="openChat()">
-    💬
-</div>
-<?php
-$user = $_SESSION['user'];
-
-$chat = mysqli_query($conn,"
-    SELECT * FROM chat_messages 
-    WHERE sender='$user' OR receiver='$user'
-    ORDER BY id ASC
-");
-?>
-
-<!-- CHAT POPUP -->
-<div id="chatBox" class="chat-box">
-
-    <div class="chat-header">
-        <span>💬 Chat Admin</span>
-        <button onclick="closeChat()">✖</button>
-    </div>
-
-    <div class="chat-body" id="chatBody">
-
-    <?php while($c = mysqli_fetch_assoc($chat)) { ?>
-
-        <div class="msg <?= $c['sender'] == $user ? 'user' : 'admin' ?>">
-            <?= htmlspecialchars($c['message']) ?>
-        </div>
-
-    <?php } ?>
-
-</div>
-
-    <div class="chat-footer">
-        <input type="text" id="chatInput" placeholder="Tulis pesan...">
-        <button onclick="sendMessage()">Kirim</button>
-    </div>
-
-</div>
-<script>
-/* SEARCH */
-document.getElementById("search").addEventListener("keyup",function(){
-    let val=this.value.toLowerCase();
-    document.querySelectorAll(".product").forEach(p=>{
-        let name=p.querySelector(".title").innerText.toLowerCase();
-        p.style.display=name.includes(val)?"block":"none";
-    });
-});
-</script>
-<script>
-function openChat(){
-    document.getElementById("chatBox").style.display = "flex";
-}
-
-function closeChat(){
-    document.getElementById("chatBox").style.display = "none";
-}
-
-function sendMessage(){
-    let input = document.getElementById("chatInput");
-    let text = input.value.trim();
-    if(text === "") return;
-    fetch("send_chat.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: "message=" + encodeURIComponent(text)
-    })
-    .then(res => res.text())
-    .then(data => {
-        let chatBody = document.getElementById("chatBody");
-
-        let msg = document.createElement("div");
-        msg.className = "msg user";
-        msg.innerText = text;
-        chatBody.appendChild(msg);
-
-        input.value = "";
-        chatBody.scrollTop = chatBody.scrollHeight;
-        });
-}
-
-/* ENTER TO SEND */
-document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById("chatInput").addEventListener("keypress", function(e){
-        if(e.key === "Enter"){
-            sendMessage();
+    <script>
+        function openEditProfileModal() {
+            document.getElementById('editProfileModal').style.display = 'block';
         }
-    });
-});
-</script>
-<script>
-function toggleCategory(){
-    let drop = document.getElementById("categoryDropdown");
-    drop.style.display = (drop.style.display === "flex") ? "none" : "flex";
-}
 
-/* klik luar untuk close */
-document.addEventListener("click", function(e){
-    let btn = document.querySelector(".category-btn");
-    let drop = document.getElementById("categoryDropdown");
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').style.display = 'none';
+        }
 
-    if(!btn.contains(e.target) && !drop.contains(e.target)){
-        drop.style.display = "none";
-    }
-});
-</script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewAvatar').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
 
+        function updateProfile() {
+            const formData = new FormData();
+            formData.append('email', document.getElementById('email').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('address', document.getElementById('address').value);
+            formData.append('password', document.getElementById('password').value);
+
+            const fileInput = document.getElementById('fotoInput');
+            if (fileInput.files && fileInput.files[0]) {
+                formData.append('foto', fileInput.files[0]);
+            }
+
+            fetch('update_profile.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Profil berhasil diperbarui');
+                        closeEditProfileModal();
+                        location.reload();
+                    } else {
+                        alert('Gagal memperbarui profil: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan');
+                });
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('editProfileModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
-</html>  
+
+</html>

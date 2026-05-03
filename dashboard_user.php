@@ -16,14 +16,25 @@ if($_SESSION['role'] != 'user'){
 
 $user = $_SESSION['user'];
 
-/* AMBIL PRODUK */
 /* FILTER KATEGORI */
-$kategori = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat']) : 'all';
+$allowedKategori = ['all','makanan','minuman','atk'];
+$kategori = $_GET['cat'] ?? 'all';
+
+if(!in_array($kategori, $allowedKategori)){
+    $kategori = 'all';
+}
 
 if($kategori == 'all'){
-    $produk = mysqli_query($conn, "SELECT * FROM products");
+    $produk = mysqli_query($conn, "
+        SELECT id, name, price, image 
+        FROM products
+    ");
 } else {
-    $produk = mysqli_query($conn, "SELECT * FROM products WHERE category='$kategori'");
+    $produk = mysqli_query($conn, "
+        SELECT id, name, price, image 
+        FROM products 
+        WHERE category='$kategori'
+    ");
 }
 ?>
 
@@ -461,7 +472,7 @@ $cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
 <!-- HEADER -->
 <div class="header">
 
-    <div class="logo">ZMart</div>
+    <div class="logo">ZMart ID</div>
 
     <div class="search">
         <input type="text" id="search" placeholder="Cari produk...">
@@ -527,7 +538,10 @@ $cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
 
 <div class="card product">
 
-    <img src="uploads/<?= $p['image'] ?>">
+    <?php
+$img = !empty($p['image']) ? "uploads/".htmlspecialchars($p['image']) : "no-image.png";
+?>
+<img src="<?= $img ?>">
 
     <div class="body">
 

@@ -16,11 +16,29 @@ if ($_SESSION['role'] != 'user') {
 
 $user = $_SESSION['user'];
 
-/* AMBIL PRODUK */
-/* FILTER KATEGORI */
+// AMBIL DATA USER
+$user_query = mysqli_query($conn, "SELECT * FROM users WHERE username='$user'");
+$user_data = mysqli_fetch_assoc($user_query);
+
+// AMBIL TOTAL ORDERS
+$total_orders_result = mysqli_query($conn, "SELECT COUNT(*) as total FROM orders WHERE user_name='$user'");
+$total_orders = mysqli_fetch_assoc($total_orders_result)['total'];
+
+// AMBIL TOTAL PENGELUARAN
+$total_spent_result = mysqli_query($conn, "SELECT COALESCE(SUM(total), 0) as total FROM orders WHERE user_name='$user' AND status!='dibatalkan'");
+$total_spent = mysqli_fetch_assoc($total_spent_result)['total'];
+
+// AMBIL CART COUNT
+$cart_result = mysqli_query($conn, "SELECT COALESCE(SUM(qty), 0) as total FROM cart WHERE user_name='$user'");
+$cart_count = mysqli_fetch_assoc($cart_result)['total'];
+
+// AMBIL RECENT ORDERS
+$recent_orders = mysqli_query($conn, "SELECT * FROM orders WHERE user_name='$user' ORDER BY created_at DESC LIMIT 5");
+
+// AMBIL PRODUK
 $kategori = isset($_GET['cat']) ? mysqli_real_escape_string($conn, $_GET['cat']) : 'all';
 
-if($kategori == 'all'){
+if ($kategori == 'all') {
     $produk = mysqli_query($conn, "SELECT * FROM products");
 } else {
     $produk = mysqli_query($conn, "SELECT * FROM products WHERE category='$kategori'");
@@ -28,12 +46,13 @@ if($kategori == 'all'){
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard - ZMart</title>
+    <link rel="stylesheet" href="css/animations.css">
     <style>
         * {
             margin: 0;
@@ -374,36 +393,51 @@ if($kategori == 'all'){
 </head>
 
 <body>
-<?php
-$cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
-    SELECT COALESCE(SUM(qty),0) as total 
-    FROM cart 
-    WHERE user_name='$user'
-"));
-?>
-<!-- HEADER -->
-<div class="header">
+    <div class="container">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-brand">🛒 ZMart</div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard_user.php" class="active">Dashboard</a></li>
+                <li><a href="home.php">Belanja</a></li>
+                <li><a href="cart.php">Keranjang</a></li>
+                <li><a href="orders_user.php">Pesanan Saya</a></li>
+                <li><a href="#" onclick="openEditProfileModal(); return false;">Edit Profil</a></li>
+                <li><a href="logout.php">Logout</a></li>
+            </ul>
+        </div>
 
-    <div class="logo">ZMart</div>
-
-    <div class="search">
-        <input type="text" id="search" placeholder="Cari produk...">
-    </div>
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="header">
+                <h1>Selamat Datang, <?php echo htmlspecialchars($user); ?>!</h1>
+                <div class="user-info">
+                    <span><?php echo htmlspecialchars(isset($user_data['email']) ? $user_data['email'] : 'Email tidak diset'); ?></span>
+                    <div class="user-avatar">
+                        <?php if (isset($user_data['foto_profil']) && !empty($user_data['foto_profil'])): ?>
+                            <img src="uploads/<?php echo htmlspecialchars($user_data['foto_profil']); ?>" alt="Profil">
+                        <?php else: ?>
+                            <?php echo strtoupper(substr($user, 0, 1)); ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
 
             <!-- STATS CARDS -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Total Pesanan</h3>
+                    <h3>📦 Total Pesanan</h3>
                     <div class="stat-value"><?php echo $total_orders; ?></div>
                 </div>
 
                 <div class="stat-card">
-                    <h3>Total Pengeluaran</h3>
-                    <div class="stat-value">Rp <?php echo number_format($total_spent ?? 0, 0, ',', '.'); ?></div>
+                    <h3>💰 Total Pengeluaran</h3>
+                    <div class="stat-value">Rp <?php echo number_format($total_spent, 0, ',', '.'); ?></div>
                 </div>
 
                 <div class="stat-card">
-                    <h3>Keranjang</h3>
+                    <h3>🛍️ Keranjang</h3>
                     <div class="stat-value"><?php echo $cart_count; ?></div>
                 </div>
             </div>
@@ -437,7 +471,7 @@ $cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
                                     </td>
                                     <td><?php echo date('d M Y', strtotime($order['created_at'])); ?></td>
                                     <td>
-                                        <a href="order_detail.php?id=<?php echo $order['id']; ?>" class="btn btn-primary">Lihat</a>
+                                        <a href="order_detail.php?id=<?php echo $order['id']; ?>" class="btn btn-primary">Lihat Detail</a>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -451,42 +485,16 @@ $cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
                 <?php endif; ?>
             </div>
 
-<!-- BANNER -->
-<div class="banner">
-    <div>
-        🔥 Promo Hari Ini
-        <br><small>Diskon sampai 50%</small>
-    </div>
-    <div>🏷️ SALE</div>
-</div>
-
-<!-- PRODUK -->
-<div class="container">
-
-<?php while($p = mysqli_fetch_assoc($produk)) { ?>
-
-<div class="card product">
-
-    <img src="uploads/<?= $p['image'] ?>">
-
-    <div class="body">
-
-        <a href="detail_produk.php?id=<?= $p['id'] ?>" class="title">
-            <?= htmlspecialchars($p['name']) ?>
-        </a>
-
-        <div class="price">
-            Rp <?= number_format($p['price']) ?>
-        </div>
-
-        <div class="btn-group">
-            <a class="buy" href="buy_now.php?id=<?= $p['id'] ?>">
-                Beli
-            </a>
-
-            <a class="cart-btn" href="add_cart.php?id=<?= $p['id'] ?>">
-                +
-            </a>
+            <!-- QUICK LINKS -->
+            <div class="content-section">
+                <h2 class="section-title">Menu Cepat</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                    <a href="home.php" class="btn btn-primary" style="text-align: center; padding: 15px;">Belanja Produk</a>
+                    <a href="cart.php" class="btn btn-primary" style="text-align: center; padding: 15px;">Lihat Keranjang</a>
+                    <a href="orders_user.php" class="btn btn-primary" style="text-align: center; padding: 15px;">Riwayat Pesanan</a>
+                    <a href="#" onclick="openEditProfileModal(); return false;" class="btn btn-primary" style="text-align: center; padding: 15px;">Edit Profil</a>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -494,13 +502,13 @@ $cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
     <div id="editProfileModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Edit Profil</h2>
+                <h2>Edit Profil Anda</h2>
                 <span class="close" onclick="closeEditProfileModal()">&times;</span>
             </div>
 
             <div class="profile-section">
                 <div class="profile-avatar">
-                    <img id="previewAvatar" src="<?php echo (isset($user_data['foto_profil']) && $user_data['foto_profil']) ? 'uploads/' . $user_data['foto_profil'] : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2240%22%3E' . strtoupper(substr($user_data['username'], 0, 1)) . '%3C/text%3E%3C/svg%3E'; ?>" alt="Profil">
+                    <img id="previewAvatar" src="<?php echo (isset($user_data['foto_profil']) && $user_data['foto_profil']) ? 'uploads/' . htmlspecialchars($user_data['foto_profil']) : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23e0e0e0%22/%3E%3Ctext x=%2250%22 y=%2260%22 text-anchor=%22middle%22 fill=%22%23999%22 font-size=%2240%22%3E' . strtoupper(substr($user, 0, 1)) . '%3C/text%3E%3C/svg%3E'; ?>" alt="Profil">
                 </div>
                 <div>
                     <h3>Upload Foto Profil</h3>
@@ -511,41 +519,48 @@ $cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
             <form id="editProfileForm">
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" value="<?php echo $user_data['username']; ?>" disabled>
+                    <input type="text" id="username" value="<?php echo htmlspecialchars($user_data['username']); ?>" disabled>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" value="<?php echo isset($user_data['email']) ? $user_data['email'] : ''; ?>">
+                    <input type="email" id="email" value="<?php echo isset($user_data['email']) ? htmlspecialchars($user_data['email']) : ''; ?>">
                 </div>
 
                 <div class="form-group">
                     <label for="phone">No. Telepon</label>
-                    <input type="tel" id="phone" value="<?php echo isset($user_data['no_hp']) ? $user_data['no_hp'] : ''; ?>">
+                    <input type="tel" id="phone" value="<?php echo isset($user_data['no_hp']) ? htmlspecialchars($user_data['no_hp']) : ''; ?>">
                 </div>
 
                 <div class="form-group">
                     <label for="address">Alamat</label>
-                    <textarea id="address"><?php echo isset($user_data['alamat']) ? $user_data['alamat'] : ''; ?></textarea>
+                    <textarea id="address"><?php echo isset($user_data['alamat']) ? htmlspecialchars($user_data['alamat']) : ''; ?></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password Baru (kosongkan jika tidak ingin mengubah)</label>
-                    <input type="password" id="password">
+                    <input type="password" id="password" placeholder="Masukkan password baru">
                 </div>
 
-                <button type="button" class="btn btn-primary" onclick="updateProfile()">Simpan Perubahan</button>
+                <button type="button" class="btn btn-primary" onclick="updateProfile()" style="width: 100%; margin-top: 10px;">Simpan Perubahan</button>
             </form>
         </div>
     </div>
 
+    <script src="js/animations.js"></script>
     <script>
         function openEditProfileModal() {
-            document.getElementById('editProfileModal').style.display = 'block';
+            const modal = document.getElementById('editProfileModal');
+            modal.style.display = 'block';
+            modal.style.animation = 'fadeIn 0.3s ease-out';
         }
 
         function closeEditProfileModal() {
-            document.getElementById('editProfileModal').style.display = 'none';
+            const modal = document.getElementById('editProfileModal');
+            modal.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
         }
 
         function previewImage(input) {
@@ -570,32 +585,50 @@ $cartCount = mysqli_fetch_assoc(mysqli_query($conn, "
                 formData.append('foto', fileInput.files[0]);
             }
 
+            // Show loading spinner
+            window.showLoadingSpinner(true);
+
             fetch('update_profile.php', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
+                    window.showLoadingSpinner(false);
                     if (data.success) {
-                        alert('Profil berhasil diperbarui');
+                        window.showNotification('Profil berhasil diperbarui', 'success');
                         closeEditProfileModal();
-                        location.reload();
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1500);
                     } else {
-                        alert('Gagal memperbarui profil: ' + data.message);
+                        window.showNotification('Gagal memperbarui profil: ' + data.message, 'error');
                     }
                 })
                 .catch(error => {
+                    window.showLoadingSpinner(false);
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan');
+                    window.showNotification('Terjadi kesalahan', 'error');
                 });
         }
 
+        // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('editProfileModal');
             if (event.target == modal) {
-                modal.style.display = 'none';
+                closeEditProfileModal();
             }
         }
+
+        // Add fadeOut animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 

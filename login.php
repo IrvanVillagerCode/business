@@ -3,35 +3,37 @@ session_start();
 include "config.php";
 
 $error = "";
+$success = "";
 
-if(isset($_POST['login'])){
+if (isset($_POST['login'])) {
 
-    $username = $_POST['username'];
+    $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = $_POST['password'];
 
     $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
     $data = mysqli_fetch_assoc($query);
 
-    if($data){
+    if ($data) {
 
-        if($password == $data['password']){
+        if ($password == $data['password']) {
 
             session_regenerate_id(true);
 
             $_SESSION['user'] = $data['username'];
             $_SESSION['role'] = $data['role'];
+            $_SESSION['user_id'] = $data['id'];
 
-            if($data['role'] == 'admin'){
-                header("Location: dashboard_admin.php");
+            $success = "Login berhasil! Mengarahkan...";
+
+            if ($data['role'] == 'admin') {
+                header("Location: dashboard_admin.php", true, 303);
             } else {
-                header("Location: dashboard_user.php");
+                header("Location: dashboard_user.php", true, 303);
             }
             exit;
-
         } else {
             $error = "Password salah";
         }
-
     } else {
         $error = "Username tidak ditemukan";
     }
@@ -39,79 +41,131 @@ if(isset($_POST['login'])){
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="id">
+
 <head>
-<title>Login ZMart</title>
-<style>
-body{
-    margin:0;
-    font-family:Arial;
-    background:#dbeafe;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    color:#1f2937;
-}
-.box{
-    background:#ffffff;
-    padding:40px;
-    border-radius:15px;
-    width:320px;
-    box-shadow:0 10px 25px rgba(59,130,246,0.15);
-    border:1px solid #bfdbfe;
-}
-input{
-    width:100%;
-    padding:10px;
-    margin:10px 0;
-    border-radius:8px;
-    border:1px solid #bfdbfe;
-    outline:none;
-    background:#f8fafc;
-}
-button{
-    width:100%;
-    padding:10px;
-    margin:10px 0;
-    background:#3b82f6;
-    border:none;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-    border-radius:8px;
-    transition:.3s;
-}
-button:hover{
-    background:#2563eb;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login ZMart - E-Commerce Platform</title>
+    <link rel="stylesheet" href="css/login-animations.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.error{
-    background:#fee2e2;
-    color:#991b1b;
-    padding:10px;
-    font-size:13px;
-    border-radius:8px;
-    border:1px solid #fecaca;
-}
-</style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .login-form-container {
+                margin-left: 10px;
+                margin-right: 10px;
+            }
+
+            .login-form-container h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
+
 <body>
+    <div class="login-container gradient-bg">
+        <!-- Animated Background -->
+        <div class="particles-container"></div>
 
-<div class="box">
-<h2>Login</h2>
+        <!-- Login Form -->
+        <div class="login-form-container">
+            <h1>🛒 ZMart</h1>
+            <p>Selamat datang kembali</p>
 
-<?php if($error){ ?>
-<div class="error"><?= $error ?></div>
-<?php } ?>
+            <?php if ($error) { ?>
+                <div class="error-message"><?= htmlspecialchars($error) ?></div>
+            <?php } ?>
 
-<form method="POST">
-<input type="text" name="username" placeholder="Username" required>
-<input type="password" name="password" placeholder="Password" required>
-<button type="submit" name="login">Login</button>
-</form>
+            <?php if ($success) { ?>
+                <div class="success-message"><?= htmlspecialchars($success) ?></div>
+            <?php } ?>
 
-</div>
+            <form method="POST" class="login-form" onsubmit="return handleLoginSubmit(event)">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Masukkan username Anda"
+                        autocomplete="username"
+                        required>
+                </div>
 
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div style="position: relative; display: flex;">
+                        <input type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Masukkan password Anda"
+                            autocomplete="current-password"
+                            required
+                            style="flex: 1; padding-right: 40px;">
+                        <button type="button"
+                            class="toggle-password"
+                            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: none; cursor: pointer; font-size: 18px; padding: 0;">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" name="login" class="login-btn">
+                    Login Sekarang
+                </button>
+
+                <div class="login-links">
+                    <a href="#forgot-password" onclick="showNotification('Fitur akan segera tersedia')">Lupa Password?</a>
+                    <a href="register.php">Daftar Akun</a>
+                </div>
+            </form>
+
+            <div class="register-link">
+                Belum punya akun? <a href="register.php">Daftar di sini</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/login-animations.js"></script>
+    <script>
+        function handleLoginSubmit(event) {
+            // Prevent default submission for validation
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (username === '' || password === '') {
+                showNotification('Semua field harus diisi', 'warning');
+                return false;
+            }
+
+            return true;
+        }
+
+        function showNotification(message, type = 'info') {
+            window.showLoginNotification(message, type);
+        }
+
+        // Debug: Log when script loads
+        console.log('Login page loaded with animations');
+    </script>
 </body>
+
 </html>

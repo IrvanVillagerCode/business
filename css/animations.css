@@ -1,0 +1,347 @@
+/* ================================
+   ANIMASI RESPONSIVE UNTUK SEMUA HALAMAN
+   ================================ */
+
+/* Fade In Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Slide In From Left */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Slide In From Right */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Slide In From Top */
+@keyframes slideInTop {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Bounce Effect */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Pulse Effect */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Scale Up Effect */
+@keyframes scaleUp {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Rotate Effect */
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Glow Effect */
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(0, 113, 206, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(0, 113, 206, 0.6);
+    }
+}
+
+/* Moving Gradient Background */
+@keyframes movingGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Wave Animation */
+@keyframes wave {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    25% {
+        transform: translateY(-10px);
+    }
+    75% {
+        transform: translateY(10px);
+    }
+}
+
+/* Shimmer Effect */
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+/* Flip Effect */
+@keyframes flip {
+    from {
+        transform: rotateY(0deg);
+    }
+    to {
+        transform: rotateY(360deg);
+    }
+}
+
+/* Slide Down */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+    }
+}
+
+/* ================================
+   APPLY ANIMATIONS TO ELEMENTS
+   ================================ */
+
+/* Header Animation */
+header {
+    animation: slideInTop 0.6s ease-out;
+}
+
+/* Navigation Items */
+nav a, .navbar-item {
+    animation: fadeIn 0.8s ease-out;
+    transition: all 0.3s ease;
+}
+
+nav a:hover, .navbar-item:hover {
+    animation: bounce 0.6s ease-in-out;
+    transform: translateY(-3px);
+}
+
+/* Banner Animation */
+.banner {
+    animation: slideInLeft 0.8s ease-out;
+}
+
+.banner-btn {
+    transition: all 0.3s ease;
+}
+
+.banner-btn:hover {
+    animation: pulse 0.6s ease-in-out;
+    transform: scale(1.05);
+}
+
+/* Promo Cards Animation */
+.promo-card {
+    animation: scaleUp 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.promo-card:nth-child(1) { animation-delay: 0.1s; }
+.promo-card:nth-child(2) { animation-delay: 0.2s; }
+.promo-card:nth-child(3) { animation-delay: 0.3s; }
+
+.promo-card:hover {
+    animation: glow 1.5s ease-in-out infinite;
+}
+
+/* Product Cards Animation */
+.product-card {
+    animation: fadeIn 0.8s ease-out;
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    animation: scaleUp 0.4s ease-out forwards;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Button Animation */
+.btn-view, .btn-cart {
+    transition: all 0.3s ease;
+}
+
+.btn-view:hover, .btn-cart:hover {
+    animation: bounce 0.6s ease-in-out;
+    transform: translateY(-2px);
+}
+
+/* Modal Animation */
+.modal {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    animation: scaleUp 0.4s ease-out;
+}
+
+/* Sidebar Animation */
+.sidebar {
+    animation: slideInLeft 0.5s ease-out;
+}
+
+.sidebar-menu li {
+    animation: slideInLeft 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.sidebar-menu li:nth-child(1) { animation-delay: 0.1s; }
+.sidebar-menu li:nth-child(2) { animation-delay: 0.2s; }
+.sidebar-menu li:nth-child(3) { animation-delay: 0.3s; }
+.sidebar-menu li:nth-child(4) { animation-delay: 0.4s; }
+.sidebar-menu li:nth-child(5) { animation-delay: 0.5s; }
+
+/* Stats Cards Animation */
+.stat-card {
+    animation: slideInRight 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 113, 206, 0.2);
+    animation: glow 1.5s ease-in-out infinite;
+}
+
+/* Table Row Animation */
+table tbody tr {
+    animation: fadeIn 0.6s ease-out;
+    animation-fill-mode: both;
+}
+
+table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+
+/* Loading Spinner */
+.spinner {
+    animation: rotate 2s linear infinite;
+}
+
+/* Content Section Animation */
+.content-section {
+    animation: slideInRight 0.8s ease-out;
+}
+
+/* Main Content Animation */
+.main-content {
+    animation: fadeIn 0.8s ease-out;
+}
+
+/* Form Input Animation */
+.form-group input,
+.form-group textarea {
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    animation: glow 1s ease-in-out infinite;
+}
+
+/* Footer Animation */
+footer {
+    animation: slideInTop 0.8s ease-out;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .promo-card {
+        animation-delay: 0 !important;
+    }
+
+    .product-card {
+        animation-delay: 0 !important;
+    }
+
+    .stat-card {
+        animation-delay: 0 !important;
+    }
+
+    .sidebar-menu li {
+        animation-delay: 0 !important;
+    }
+
+    /* Reduce animation on mobile for performance */
+    * {
+        animation-duration: 0.4s !important;
+    }
+}
+
+/* Performance Optimization */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

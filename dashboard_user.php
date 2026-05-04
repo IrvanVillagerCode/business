@@ -2,16 +2,22 @@
 session_start();
 include "config.php";
 
-// CEK LOGIN
-if (!isset($_SESSION['user'])) {
+// CEK LOGIN - jika tidak ada session user, redirect ke login
+if (!isset($_SESSION['user']) || !isset($_SESSION['role'])) {
     header("Location: login.php");
-    exit;
+    exit();
 }
 
-// CEK ROLE
-if ($_SESSION['role'] != 'user') {
-    header("Location: dashboard_admin.php");
-    exit;
+// CEK ROLE - jika bukan user, redirect ke login (bukan dashboard lain)
+$role = strtolower($_SESSION['role']);
+if ($role != 'user') {
+    // Jika admin, redirect ke dashboard admin
+    if ($role == 'admin') {
+        header("Location: dashboard_admin.php");
+    } else {
+        header("Location: login.php");
+    }
+    exit();
 }
 
 $user = $_SESSION['user'];

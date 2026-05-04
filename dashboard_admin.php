@@ -2,10 +2,24 @@
 session_start();
 include "config.php";
 
-if (!isset($_SESSION['user']) || $_SESSION['role'] != 'admin') {
+// Check if user is logged in and is admin
+if (!isset($_SESSION['user']) || !isset($_SESSION['role'])) {
     header("Location: login.php");
-    exit;
+    exit();
 }
+
+// Check if role is admin
+$role = strtolower($_SESSION['role']);
+if ($role != 'admin') {
+    // Redirect user ke dashboard mereka
+    if ($role == 'user') {
+        header("Location: dashboard_user.php");
+    } else {
+        header("Location: login.php");
+    }
+    exit();
+}
+
 /* NOTIF CHAT MASUK */
 $notif = mysqli_fetch_assoc(mysqli_query($conn, "
     SELECT COUNT(*) as total 
@@ -35,12 +49,13 @@ $produk = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard ZMart</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/animations.css">
 
     <style>
         /* ===== GLOBAL ===== */
@@ -342,6 +357,7 @@ $produk = mysqli_query($conn, $query);
             }
         }
     </script>
+    <script src="js/animations.js"></script>
 </body>
 
 </html>

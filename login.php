@@ -1,41 +1,60 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 include "config.php";
 
 $error = "";
-$success = "";
 
-if (isset($_POST['login'])) {
+// PROCESS LOGIN
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = isset($_POST['username']) ? trim($_POST['username']) : '';
+    $password = isset($_POST['password']) ? trim($_POST['password']) : '';
 
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
-    $password = $_POST['password'];
-
-    $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
-    $data = mysqli_fetch_assoc($query);
-
-    if ($data) {
-
-        if ($password == $data['password']) {
-
-            session_regenerate_id(true);
-
-            $_SESSION['user'] = $data['username'];
-            $_SESSION['role'] = $data['role'];
-            $_SESSION['user_id'] = $data['id'];
-
-            $success = "Login berhasil! Mengarahkan...";
-
-            if ($data['role'] == 'admin') {
-                header("Location: dashboard_admin.php", true, 303);
-            } else {
-                header("Location: dashboard_user.php", true, 303);
-            }
-            exit;
-        } else {
-            $error = "Password salah";
-        }
+    if (empty($username) || empty($password)) {
+        $error = "Username dan password harus diisi";
     } else {
-        $error = "Username tidak ditemukan";
+        $username = mysqli_real_escape_string($conn, $username);
+        $query = mysqli_query($conn, "SELECT * FROM users WHERE username='$username'");
+
+        if (!$query) {
+            $error = "Error: " . mysqli_error($conn);
+        } else {
+            $data = mysqli_fetch_assoc($query);
+
+            if (!$data) {
+                $error = "Username tidak ditemukan";
+            } else {
+                // Check password - try plain text first, then hashed
+                $password_match = false;
+                if ($password === $data['password']) {
+                    $password_match = true;
+                } else if (password_verify($password, $data['password'])) {
+                    $password_match = true;
+                }
+
+                if ($password_match) {
+                    // PASSWORD CORRECT - SET SESSION
+                    $_SESSION['user'] = $data['username'];
+                    $_SESSION['role'] = strtolower($data['role']);
+                    $_SESSION['user_id'] = $data['id'];
+
+                    // REDIRECT BASED ON ROLE
+                    if (strtolower($data['role']) == 'admin') {
+                        header("Location: dashboard_admin.php");
+                        exit;
+                    } else if (strtolower($data['role']) == 'user') {
+                        header("Location: dashboard_user.php");
+                        exit;
+                    } else {
+                        $error = "Role tidak dikenali: " . $data['role'];
+                    }
+                } else {
+                    $error = "Password salah";
+                }
+            }
+        }
     }
 }
 ?>
@@ -94,18 +113,13 @@ if (isset($_POST['login'])) {
                 <div class="error-message"><?= htmlspecialchars($error) ?></div>
             <?php } ?>
 
-            <?php if ($success) { ?>
-                <div class="success-message"><?= htmlspecialchars($success) ?></div>
-            <?php } ?>
-
-            <form method="POST" class="login-form" onsubmit="return handleLoginSubmit(event)">
+            <form method="POST" class="login-form">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <input type="text"
                         id="username"
                         name="username"
                         placeholder="Masukkan username Anda"
-                        autocomplete="username"
                         required>
                 </div>
 
@@ -116,7 +130,6 @@ if (isset($_POST['login'])) {
                             id="password"
                             name="password"
                             placeholder="Masukkan password Anda"
-                            autocomplete="current-password"
                             required
                             style="flex: 1; padding-right: 40px;">
                         <button type="button"
@@ -127,12 +140,12 @@ if (isset($_POST['login'])) {
                     </div>
                 </div>
 
-                <button type="submit" name="login" class="login-btn">
+                <button type="submit" class="login-btn">
                     Login Sekarang
                 </button>
 
                 <div class="login-links">
-                    <a href="#forgot-password" onclick="showNotification('Fitur akan segera tersedia')">Lupa Password?</a>
+                    <a href="#forgot-password">Lupa Password?</a>
                     <a href="register.php">Daftar Akun</a>
                 </div>
             </form>
@@ -146,25 +159,23 @@ if (isset($_POST['login'])) {
     <!-- Scripts -->
     <script src="js/login-animations.js"></script>
     <script>
-        function handleLoginSubmit(event) {
-            // Prevent default submission for validation
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
+        // Password toggle button
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.querySelector('.toggle-password');
+            const passwordInput = document.getElementById('password');
 
-            if (username === '' || password === '') {
-                showNotification('Semua field harus diisi', 'warning');
-                return false;
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', function() {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        this.textContent = '🙈';
+                    } else {
+                        passwordInput.type = 'password';
+                        this.textContent = '👁️';
+                    }
+                });
             }
-
-            return true;
-        }
-
-        function showNotification(message, type = 'info') {
-            window.showLoginNotification(message, type);
-        }
-
-        // Debug: Log when script loads
-        console.log('Login page loaded with animations');
+        });
     </script>
 </body>
 

@@ -15,12 +15,13 @@ while ($row = mysqli_fetch_assoc($kategori_query)) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZMart - E-Commerce Store</title>
+    <link rel="stylesheet" href="css/animations.css">
     <style>
         * {
             margin: 0;
@@ -575,6 +576,7 @@ while ($row = mysqli_fetch_assoc($kategori_query)) {
         // Update cart count on page load
         window.addEventListener('load', updateCartCount);
     </script>
+    <script src="js/animations.js"></script>
 </body>
 
 </html>

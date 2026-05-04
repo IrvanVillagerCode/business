@@ -40,6 +40,7 @@ $transaction_id = "TRX-" . $order_id . "-" . time();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💳 Pembayaran - ZMart</title>
+    <link rel="stylesheet" href="css/animations.css">
     <style>
         * {
             margin: 0;
@@ -535,6 +536,7 @@ $transaction_id = "TRX-" . $order_id . "-" . time();
                 });
         }
     </script>
+    <script src="js/animations.js"></script>
 </body>
 
 </html>

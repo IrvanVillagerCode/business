@@ -1,16 +1,18 @@
 <?php
 session_start();
+include "config.php";
 
-// Jika sudah login, arahkan ke dashboard sesuai role
-if (isset($_SESSION['user'])) {
-    if ($_SESSION['role'] == 'admin') {
+// If user is already logged in, redirect to appropriate dashboard
+if (isset($_SESSION['user']) && isset($_SESSION['role'])) {
+    $role = strtolower(trim($_SESSION['role']));
+
+    if ($role == 'admin') {
         header("Location: dashboard_admin.php");
-    } else {
+        exit();
+    } elseif ($role == 'user') {
         header("Location: dashboard_user.php");
+        exit();
     }
-    exit;
 }
 
-// Jika belum login, arahkan ke home page
-header("Location: home.php");
-exit;
+// If not logged in, go to home page
